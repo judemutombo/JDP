@@ -1,0 +1,20 @@
+{
+  "name": "jdp_web_server",
+  "version": "1.0.0",
+  "description": "web server use as bridge between player and main server",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "jude",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.1",
+    "react-hot-loader": "^4.13.1",
+    "webpack": "^5.96.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-middleware": "^7.4.2",
+    "webpack-hot-middleware": "^2.26.1"
+  }
+}
