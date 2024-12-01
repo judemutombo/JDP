@@ -11,6 +11,6 @@ export const infos = {
         {"nom":"Companie","definition":"Le nom d'une companie, entreprise,start-up ou firme commençant par la lettre donnée"},
         {"nom":"Ville","definition":"Le nom d'une ville commençant par la lettre donnée"}
     ],
-    "Motidentique" : {"definition":"Comment les joueurs ayant le même mot devraient être coté","cote":["Zero","Half"]},
+    "Motidentique" : {"definition":"Comment les joueurs ayant le même mot devraient être coté","cote":["Zero","Moitie"]},
     "Point" : [5,10,12,15,18,20]
 }

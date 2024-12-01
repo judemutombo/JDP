@@ -2,19 +2,31 @@
   "name": "jdp_web_server",
   "version": "1.0.0",
   "description": "web server use as bridge between player and main server",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js"
   },
   "author": "jude",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "mysql": "^2.18.1",
     "react-hot-loader": "^4.13.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "webpack": "^5.96.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-middleware": "^7.4.2",
     "webpack-hot-middleware": "^2.26.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }

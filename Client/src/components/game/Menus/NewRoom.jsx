@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
 import { useState, useEffect } from 'react';
-import {infos} from "../../../../data/columns.js"
-import Selector from './Selector';
+import {infos} from "../../../data/columns.js"
+import Selector from './Selector.jsx';
 
 
 function NewRoom({closeNewRoom, create}) {

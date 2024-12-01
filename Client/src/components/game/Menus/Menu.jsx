@@ -1,21 +1,26 @@
-import '../../../../css/style.css';
+
 import { Button, Dialog, DialogPanel, DialogTitle, DialogBackdrop } from '@headlessui/react'
 import { useState, useEffect } from 'react';
 import NewRoom from './NewRoom';
 import JoinRoom from './JoinRoom';
+import { useGameStore } from '../../../store/gameStore';
+import toast from 'react-hot-toast';
+
+
 function Menu() { 
 
-    const [newRoom, setNewRoom] = useState(false);
-    const [joinRoom, setJoinRoom] = useState(false);
+    const {joinRoom, createRoom} = useGameStore();
+
+    const [newRoomState, setNewRoom] = useState(false);
+    const [joinRoomState, setJoinRoom] = useState(false);
     
     let handleNewRoom = (checkList, scoreByI, score) => {
-        console.log(checkList);
-        console.log(scoreByI);
-        console.log(score);
+        if(checkList.length === 0) return toast.error("You must select at least 6 columns");
+        createRoom(checkList, scoreByI, score);
     }
 
     let handleJoinRoom = (partiedId) => {
-            console.log(partiedId);
+            joinRoom(partiedId);
     }
 
     let openNewRoom = () => {   
@@ -50,13 +55,13 @@ function Menu() {
             </div>
 
         </div>
-        <Dialog open={newRoom} as="div" className="relative z-10 focus:outline-none bg-black max-w-lg" onClose={closeNewRoom} >
-            <DialogBackdrop className="fixed inset-0 bg-foreground" />
+        <Dialog open={newRoomState} as="div" className="relative z-10 focus:outline-none bg-black max-w-lg" onClose={closeNewRoom} >
+            <DialogBackdrop className="fixed inset-0 bg-background" />
             <NewRoom closeNewRoom={closeNewRoom} create={handleNewRoom}/>
         </Dialog>
         
-        <Dialog open={joinRoom} as="div" className="relative z-10 focus:outline-none bg-black max-w-lg" onClose={closeJoinRoom} >
-            <DialogBackdrop className="fixed inset-0 bg-foreground" />
+        <Dialog open={joinRoomState} as="div" className="relative z-10 focus:outline-none bg-black max-w-lg" onClose={closeJoinRoom} >
+            <DialogBackdrop className="fixed inset-0 bg-background" />
             <JoinRoom closeJoinRoom={closeNewRoom} Join={handleJoinRoom}/>
         </Dialog>
         </>
