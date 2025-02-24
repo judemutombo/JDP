@@ -5,9 +5,10 @@ import WaintingLetter from './WaitingLetter';
 import WaintingSet from './WaitingSet';
 import Letters from './Letters';
 import Board from './Board';
+import CorrectorBoard from './CorrectorBoard';
 
 function GameContainer() {
-    const {organisator, service, partieId, joueurs, currentChooser} = useGameStore();
+    const {organisator, service, partieId, joueurs, currentChooser, isTheCorrector} = useGameStore();
 
     if(organisator && service === 'setConfiguration'){
         return(
@@ -21,6 +22,21 @@ function GameContainer() {
         return <Letters  />
     }else if(service === 'enCours'){
         return <Board />
+    }else if(service === 'correction'){
+        if(isTheCorrector){
+            return <CorrectorBoard/>
+        }else{
+            return <div className='w-full h-full flex justify-center items-center'>
+            <div>
+                <div className='flex justify-center items-center'>
+                    <span className="loading loading-spinner text-primary w-20 text-center"></span>
+                </div>
+                <div className='flex justify-center items-center'>
+                    <h2>Correction</h2>
+                </div>
+            </div>
+        </div>
+        }     
     }
 
     return(

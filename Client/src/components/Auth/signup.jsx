@@ -40,10 +40,10 @@ function SignUpPage() {
 
     const checkUsername = (e) => {
         e.preventDefault()
-        setInfo({...info, "password" : e.target.value})
+        setInfo({...info, "username" : e.target.value})
 
 
-        setUsed(!used)
+        //setUsed(!used)
         if(used){
             errorInd.current.innerText = "already used"
             userCheck.current.classList.toggle("bg-red-700")

@@ -4,7 +4,7 @@ import WordField from "./WordField";
 
 
 const Board = function(){
-    const {columns, currentCharacter, updatewords} = useGameStore()
+    const {columns, currentCharacter, updatewords, currentWords, soumettre} = useGameStore()
     
     const wds = columns.reduce((acc, column) => {
         acc[column] = ""; 
@@ -19,8 +19,9 @@ const Board = function(){
     }
 
     const handleTerminate = function(e){
-
+        soumettre()
     }
+    
     const hd = []
     columns.map(element =>{
         hd.push(<td className="border">{element}</td>)

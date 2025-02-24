@@ -25,9 +25,11 @@ export const useGameStore = create((set,get) => ({
     columns : [],
     currentCharacter :null,
     currentWords : {},
+    isTheCorrector : false,
+    correctionData : {},
 
     saveUserState : function(){
-        const {user_id, socket_id, partieId, correcteurId, position, joueur_id, service, username, name, surname, organisator, currentWords} = get();
+        const {user_id, socket_id, partieId, correcteurId, position, joueur_id, service, username, name, surname, organisator, currentWords, currentCharacter, isTheCorrector} = get();
         let json = {
             _socket_id : socket_id,
             _username :  username,
@@ -40,7 +42,9 @@ export const useGameStore = create((set,get) => ({
             _name : name,
             _surname : surname,
             _organisator : organisator,
-            _currentWords : currentWords
+            _currentCharacter : currentCharacter,
+            _currentWords : currentWords,
+            _isTheCorrector : isTheCorrector
         };
         const serializedUser = JSON.stringify(json);
         localStorage.setItem('jdp_userState', serializedUser);
@@ -62,7 +66,10 @@ export const useGameStore = create((set,get) => ({
                 name : user._name,
                 surname : user._surname,
                 affectedToRoom : user._partieId ? true : false,
-                organisator : user._organisator
+                organisator : user._organisator,
+                currentWords : user._currentWords,
+                currentCharacter : user._currentCharacter,
+                isTheCorrector : user._isTheCorrector
             });
         }
     },
@@ -246,10 +253,11 @@ export const useGameStore = create((set,get) => ({
                 set({waiting : false})
                 const {saveUserState} = get();
                 if(data.type == "debut"){
-                    set({service : data.service});
+                    set({service : data.service, currentCharacter : data.lettre});
                 }else if(data.type == "soumettre"){
                     set({service : data.service});
                     const {position, socket, partieId, correcteurId, joueur_id, currentWords} = get()
+                    console.log(currentWords)
                     await socket.emit("send_words",{
                         pid : partieId,
                         cid : correcteurId,
@@ -259,6 +267,12 @@ export const useGameStore = create((set,get) => ({
                 }
                 saveUserState();
             });
+            socket.on('correcteur', async (data) =>{
+                const {saveUserState} = get()
+                set({isTheCorrector : true})
+                set({correctionData : data.data})
+                saveUserState()
+            })
         }
     },
 
@@ -331,5 +345,7 @@ export const useGameStore = create((set,get) => ({
 
     updatewords : async function(words) {
         set({currentWords : words})
-    }
+        const {saveUserState} = get()
+        saveUserState()
+    } 
 }));

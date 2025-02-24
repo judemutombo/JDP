@@ -8,7 +8,7 @@ const WordField = function(props){
         props.setw(e.target.value, props.column)
     }
     return (
-        <input className="w-full h-10 bg-primary outline-0 px-2 text-white" type="text" name="word" id="word" value={word} onChange={handleWord}/>
+        <input className="w-full h-10 bg-primary outline-0 px-2 text-white" type="text" name="word" id="word" value={word} onChange={handleWord} autoComplete={false}/>
     )
 
 }
