@@ -1,7 +1,7 @@
 import {create} from 'zustand';
 import toast from 'react-hot-toast';
 import {axiosInstance} from '../utils/axios';
-import io from 'socket.io-client';
+import io, { Socket } from 'socket.io-client';
 
 export const useGameStore = create((set,get) => ({
     waiting : false,
@@ -15,7 +15,7 @@ export const useGameStore = create((set,get) => ({
     username : null,
     name : null,
     surname : null,
-    socket : null,
+    socket : null ,
     affectedToRoom : false,
     isCheckingState : true,
     organisator : false,
@@ -27,6 +27,7 @@ export const useGameStore = create((set,get) => ({
     currentWords : {},
     isTheCorrector : false,
     correctionData : {},
+    shouldDisconnect : false,
 
     saveUserState : function(){
         const {user_id, socket_id, partieId, correcteurId, position, joueur_id, service, username, name, surname, organisator, currentWords, currentCharacter, isTheCorrector} = get();
@@ -73,7 +74,22 @@ export const useGameStore = create((set,get) => ({
             });
         }
     },
-    
+    useService : async function(){
+        const {service, socket, name, partieId, correcteurId, joueur_id, username} = get()
+        if(service == "correctionData"){
+            await socket.emit(
+                "correctionData",
+            {     
+                pid : partieId,
+                cid : correcteurId,
+                jid : joueur_id,
+                jud : username,
+                jn  : name
+            }
+            )
+        }
+    },
+
     setData : function(data){
         
         const {saveUserState, loadUserState, debug} = get();
@@ -94,22 +110,17 @@ export const useGameStore = create((set,get) => ({
 
     checkState : async function(){
         try {
-            const {setData} = get();
+            const {setData, initializeSocket, retrieveData} = get();
             const res = await axiosInstance.get('/auth/check');
             setData(res.data);
-
-            const {initializeSocket} = get();   
             initializeSocket();
 
-        }catch(error){
-            set({affectedToRoom : false});
-        }finally{
             set({isCheckingState : false});
-
-            const {retrieveData} = get();
             retrieveData()
+        }catch(error){
+            toast.error(error.toString())
+            set({affectedToRoom : false});
         }
-        
     },
 
     joinRoom : async function(partieId){
@@ -122,14 +133,19 @@ export const useGameStore = create((set,get) => ({
                 "jn": name
             });
         }catch(error){
-            toast.error(error);
+            toast.error(error.toString());
         }
     },
 
     createRoom : async function(selectedColumns, scoreBy, score){
+
+        const {initializeSocket} = get()
+        initializeSocket()
         try{
             const {socket, username, name} = get();
-            
+            if(socket == null){
+                initializeSocket()
+            }
             await socket.emit('new_game', {
                 'columns' : selectedColumns,
                 'jud' : username,
@@ -139,9 +155,10 @@ export const useGameStore = create((set,get) => ({
             });
 
         }catch(error){
-            toast.error(error);
+            toast.error(error.toString());
         }
     },
+
     reset : function(){
         set({partieId : null, 
             correcteurId : null, 
@@ -155,18 +172,19 @@ export const useGameStore = create((set,get) => ({
         const {saveUserState} = get()
         saveUserState()
     },
+    
     initializeSocket: async function () {
         if (!get().socket) {
             const socket = io('http://localhost:5001');
             set({ socket });
-
             socket.on('connected', async (data) => console.log('Connected:', data));
             socket.on('disconnect', async () => {
                 const {reset} = get()
-                reset()
+                //reset()
             });
 
             socket.on('AttentePartie', async (data) => {
+                console.log('debug')
                     set({waiting : false})
                     set({organisator : true});
                     set({correcteurId : data.cid});
@@ -212,7 +230,7 @@ export const useGameStore = create((set,get) => ({
 
             socket.on('retour', async (data) => {
                 set({waiting : false})
-                const {saveUserState} = get();
+                const {saveUserState, useService} = get();
                 set({service : data.service});
                 set({joueurs :[...data.joueurs]});
                 set({columns : data.colonnes});
@@ -220,6 +238,7 @@ export const useGameStore = create((set,get) => ({
                 set({characters : data.utilisees});
                 set({currentChooser : data.choisisseur});
                 saveUserState();
+                useService();
                 toast.success('Back in the game');
                 const {debug} = get()
                 debug()
@@ -289,7 +308,7 @@ export const useGameStore = create((set,get) => ({
                     jn : name
                 })
             }catch(error){
-                toast.error(error);
+                toast.error(error.toString());
             }
 
         }     
@@ -313,7 +332,7 @@ export const useGameStore = create((set,get) => ({
             })
 
         }catch(error){
-            toast.error(error);
+            toast.error(error.toString());
         }
     },
 

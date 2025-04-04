@@ -1,5 +1,6 @@
 import express from 'express';
 import authRoute from './routes/auth.Route.js';
+import { debug } from './middlewares/debug.js';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser'
@@ -13,6 +14,7 @@ App.use(cors({
     credentials : true
 }));
 App.use(cookieParser());
+App.use(debug);
 App.use('/auth', authRoute);
 
 const PORT = process.env.PORT || 3000;

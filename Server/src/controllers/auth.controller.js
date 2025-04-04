@@ -13,46 +13,34 @@ export const signup =  async (req, res) => {
         if(password.length < 6 ){
             return res.status(400).json({message : "Password must be at least 6  characters."});
         }
-        connection.query({
-            sql: 'SELECT * FROM users WHERE username=?',
-            timeout: 40000, // 40s
-            values: [username]
-          }, async function (error, results, fields) {
-            if (error){
-                res.status(500).json({message : "Cannot create the account, please try again."});
-                throw error;
-            }
-            if(results.length >= 1){
-                return res.status(400).json({message : "Username already used, choose anothe one."});
-            }
+        const [results] = await connection.execute(
+            'SELECT * FROM players WHERE username=?',
+            [username]
+        )
+        if (results.length >= 1) { return res.status(400).json({message : "Username already used, choose anothe one."}); }
 
-            const salt = await bcrypt.genSalt(10)
-            const hashedp = await bcrypt.hash(password, salt)
-            const _jdp_id = generate_id()
-            connection.query({
-                sql: 'INSERT INTO users(name,surname,username,mail,password,user_id) VALUES(?,?,?,?,?,?)',
-                timeout: 40000, // 40s
-                values: [name, surname, username, mail, hashedp,_jdp_id]
-              }, async function (error, results, fields) {
-                    if (error){
-                        res.status(500).json({message : "Cannot create the account, please try again."});
-                        throw error;
-                    }
-                    if(results.affectedRows == 1){
-                        generateToken(_jdp_id,res)
-                        res.status(201).json({
-                            name : name,
-                            surname : surname,
-                            username : username,
-                            mail : mail,
-                            id : _jdp_id
-                        })
-                    }else{
-                        res.status(500).json({message : "Cannot create the account, please try again."});
-                    }
-              })
-          });
+        const salt = await bcrypt.genSalt(10)
+        const hashedp = await bcrypt.hash(password, salt)
+        const _jdp_id = await generate_id()
+
+        const [results2] = await connection.execute(
+            'INSERT INTO players(name,surname,username,mail,password,user_id) VALUES(?,?,?,?,?,?)',
+            [name, surname, username, mail, hashedp,_jdp_id]
+        )
+        if (results2.affectedRows == 1){
+            const token = generateToken(_jdp_id,res)
+            res.status(201).json({
+                name : name,
+                surname : surname,
+                username : username,
+                mail : mail,
+                id : _jdp_id
+            })
+        }else{
+            res.status(500).json({message : "Cannot create the account, please try again."});
+        }
     }catch(error){
+        console.log(error)
         res.status(500).json({message : "Cannot create the account, please try again."});
     }
     
@@ -61,32 +49,28 @@ export const signup =  async (req, res) => {
 export const signin = async (req, res) => { 
     const {username, password} = req.body
     try{
-        connection.query({
-            sql: 'SELECT * FROM users WHERE username=? or mail=?',
-            timeout: 40000, // 40s
-            values: [username, username]
-        }, async function (error, results, fields) {
-            if (error){
-                res.status(500).json({message : "error, please try again."});
-                throw error;
-            }
-            if(results.length <= 0){
-                return res.status(400).json({message : "No user found."});
-            }
-            const sameP = await bcrypt.compare(password, results[0].password)
-            if(!sameP){
-                return res.status(400).json({message : "Wrong password."});
-            }
-            generateToken(results[0].user_id, res)
+        const [results] = await connection.execute(
+            'SELECT * FROM players WHERE username=? or mail=?',
+            [username, username]
+        )
 
-            res.status(200).json({ 
-                name : results[0].name,
-                surname : results[0].surname,
-                username : results[0].username,
-                mail : results[0].mail,
-                id : results[0]._jdp_id});
+        if(results.length <= 0){
+            return res.status(400).json({message : "No user found."});
+        }
 
-        })
+        const sameP = await bcrypt.compare(password, results[0].password)
+        if(!sameP){
+            return res.status(400).json({message : "Wrong password."});
+        }
+
+        generateToken(results[0].user_id, res)
+        res.status(200).json({ 
+            name : results[0].name,
+            surname : results[0].surname,
+            username : results[0].username,
+            mail : results[0].mail,
+            id : results[0]._jdp_id
+        });
     }catch(error){
         res.status(500).json({message : "error, please try again."});
         throw error;
@@ -109,13 +93,7 @@ export const checkAuth = async (req, res) => {
     res.status(200).send(req.user)
 }
 
-function sleep(ms) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
-}
-
-function generate_id(){
+async function generate_id(){
     var aleatoire = 0;
     var dec=65; 
     var de = [];
@@ -168,14 +146,11 @@ function generate_id(){
     let exists = false
     do {
         exists = false
-        connection.query({
-            sql: 'SELECT * FROM users WHERE user_id=?',
-            timeout: 40000, // 40s
-            values: [id]
-          }, async function (error, results, fields) {
-                if (error) throw error;
-                if(results.length >= 1) exists = true
-          })
+        const [results] = await connection.execute(
+            'SELECT * FROM players WHERE user_id=?',
+            [id]
+        )
+        if(results.length >= 1) exists = true
     } while (exists);
 
     return id

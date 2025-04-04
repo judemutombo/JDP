@@ -15,7 +15,7 @@ function TagField(props){
                 <p>{props.value[0]}</p>
             </div>
             <div  className="w-1/4  flex justify-center items-center">
-                <input type="checkbox" onChange={onChange}/>
+                <input type="checkbox" onChange={onChange} selected/>
             </div>
 
         </div>
